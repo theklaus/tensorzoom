@@ -53,7 +53,7 @@ def render(pb_path, img_path):
         start_time = time.time()
         output = sess.run(fast_output)
         duration = time.time() - start_time
-        print "output calculated: %.10f sec" % duration
+        print ("output calculated: %.10f sec" % duration)
 
         # print image
         _, pb_name = os.path.split(pb_path)
@@ -61,7 +61,7 @@ def render(pb_path, img_path):
         name, ext = os.path.splitext(img_path)
         out_path = name + "_" + pb_name + ext
         skimage.io.imsave(out_path, output[0])
-        print "img saved:", out_path
+        print ("img saved:", out_path)
 
 
 def render_sliced(pb_path, img_path, side_num):
@@ -85,7 +85,7 @@ def render_sliced(pb_path, img_path, side_num):
         start_time = time.time()
         output = sess.run(fast_output)
         duration = time.time() - start_time
-        print "output calculated: %.10f sec" % duration
+        print ("output calculated: %.10f sec" % duration)
 
         # print image
         _, pb_name = os.path.split(pb_path)
@@ -93,7 +93,7 @@ def render_sliced(pb_path, img_path, side_num):
         name, ext = os.path.splitext(img_path)
         out_path = name + "_" + pb_name + ext
         skimage.io.imsave(out_path, output[0])
-        print "img saved:", out_path
+        print ("img saved:", out_path)
 
 
 if __name__ == "__main__":

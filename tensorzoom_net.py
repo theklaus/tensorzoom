@@ -25,7 +25,7 @@ class TensorZoomNet:
 
     def __init__(self, npy_path=None, trainable=True):
         if npy_path is not None:
-            self.data_dict = np.load(npy_path).item()
+            self.data_dict = np.load(npy_path, encoding='latin1').item()
         else:
             self.data_dict = None
 
@@ -71,7 +71,7 @@ class TensorZoomNet:
 
         self.output = (tf.tanh(self.deconv3) + 1) / 2
 
-        if PRINT_LAYER: print self.get_var_count()
+        if PRINT_LAYER: print (self.get_var_count())
 
         if clear_memory:
             self.data_dict = None
@@ -188,7 +188,7 @@ class TensorZoomNet:
 
     def get_var(self, initial_value, name, trainable=None):
         if PRINT_LAYER:
-            print name
+            print (name)
 
         if self.data_dict is not None and name in self.data_dict:
             value = self.data_dict[name]

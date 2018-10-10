@@ -22,7 +22,7 @@ class Vgg19(vgg19.Vgg19):
     # values scaled [0, 1]
     def build(self, rgb, train=False):
         start_time = time.time()
-        print "build model started"
+        print ("build model started")
         rgb_scaled = rgb * 255.0
 
         # Convert RGB to BGR
@@ -70,7 +70,7 @@ class Vgg19(vgg19.Vgg19):
         # self.pool5 = self.conv5_4
 
         self.data_dict = None
-        print "build model finished: %ds" % (time.time() - start_time)
+        print ("build model finished: %ds" % (time.time() - start_time))
 
     def get_conv_filter(self, name):
         var = None
