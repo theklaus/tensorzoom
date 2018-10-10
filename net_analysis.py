@@ -29,12 +29,12 @@ def load_image(path, height=None, width=None):
 
 
 def create_tiles(large, height, width, num):
-    h_stride = height / num
-    w_stride = width / num
+    h_stride = int(height / num)
+    w_stride = int(width / num)
     t_tiles = []
-    for y in xrange(num):
+    for y in range(num):
         row = []
-        for x in xrange(num):
+        for x in range(num):
             t_tile = tf.slice(large, [0, y * h_stride, x * w_stride, 0], [1, h_stride, w_stride, 3])
             row.append(t_tile)
         t_tiles.append(row)
@@ -71,16 +71,16 @@ def render_sliced(pb_path, img_path, side_num):
 
         # use stitch training method, slice the image into tiles and concat as batches
         tiles = create_tiles(contents, img.shape[0], img.shape[1], side_num)
-        batch = tf.concat(0, [tf.concat(0, tiles[y]) for y in xrange(side_num)])  # row1, row2, ...
+        batch = tf.concat([tf.concat(tiles[y], 0) for y in range(side_num)], 0)  # row1, row2, ...
 
         net = TensorZoomNet(pb_path, False)
         net.build(batch)
 
         # stitch the tiles back together after split the batches
-        split = tf.split(0, side_num ** 2, net.output)
-        fast_output = tf.concat(1, [
-            tf.concat(2, [split[x] for x in xrange(side_num * y, side_num * y + side_num)])
-            for y in xrange(side_num)])
+        split = tf.split(net.output, side_num ** 2, 0)
+        fast_output = tf.concat([
+            tf.concat([split[x] for x in range(side_num * y, side_num * y + side_num)], 2)
+            for y in range(side_num)], 1)
 
         start_time = time.time()
         output = sess.run(fast_output)
