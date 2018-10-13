@@ -82,7 +82,7 @@ class TensorZoomNet:
                    trainable=None):
         with tf.variable_scope(name):
             filt = self.get_conv_filter_var(filter_size, in_channels, out_channels, name, trainable=trainable)
-            conv = tf.nn.conv2d(input, filt, [1, strides, strides, 1], 'SAME')
+            conv = tf.nn.conv2d(input, filt, [1, strides, strides, 1], 'SAME', data_format='NHWC')
 
             bias = self.get_conv_bias_var(out_channels, name, trainable=trainable)
             conv = tf.nn.bias_add(conv, bias)
@@ -97,7 +97,7 @@ class TensorZoomNet:
     def res_block(self, input, size, name, trainable=None):
         with tf.variable_scope(name):
             filt = self.get_conv_filter_var(3, size, size, name + "_conv1", trainable=trainable)
-            conv = tf.nn.conv2d(input, filt, [1, 1, 1, 1], 'SAME')
+            conv = tf.nn.conv2d(input, filt, [1, 1, 1, 1], 'SAME', data_format='NHWC')
 
             bias = self.get_conv_bias_var(size, name + "_conv1", trainable=trainable)
             conv = tf.nn.bias_add(conv, bias)
@@ -107,7 +107,7 @@ class TensorZoomNet:
             elu = tf.nn.relu(bn)
 
             filt = self.get_conv_filter_var(3, size, size, name + "_conv2", trainable=trainable)
-            conv = tf.nn.conv2d(elu, filt, [1, 1, 1, 1], 'SAME')
+            conv = tf.nn.conv2d(elu, filt, [1, 1, 1, 1], 'SAME', data_format='NHWC')
 
             bias = self.get_conv_bias_var(size, name + "_conv2", trainable=trainable)
             conv = tf.nn.bias_add(conv, bias)
@@ -129,7 +129,7 @@ class TensorZoomNet:
 
             filt = self.get_conv_filter_var(filter_size, out_channels, in_channels, name,
                                             trainable=trainable)  # reversed in/out
-            conv = tf.nn.conv2d_transpose(input, filt, output_shape, [1, strides, strides, 1], 'SAME')
+            conv = tf.nn.conv2d_transpose(input, filt, output_shape, [1, strides, strides, 1], 'SAME', data_format='NHWC')
 
             bias = self.get_conv_bias_var(out_channels, name, trainable=trainable)
             conv = tf.nn.bias_add(conv, bias)
