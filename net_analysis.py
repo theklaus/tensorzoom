@@ -5,6 +5,8 @@ import skimage.io
 import skimage.transform
 import tensorflow as tf
 import os
+import glob
+from PIL import Image
 
 from tensorzoom_net import TensorZoomNet
 
@@ -25,7 +27,7 @@ def load_image(path, height=None, width=None):
     else:
         ny = img.shape[0]
         nx = img.shape[1]
-    return skimage.transform.resize(img, (ny, nx))
+    return skimage.transform.resize(img, (ny, nx), mode='constant', anti_aliasing=True)
 
 
 def create_tiles(large, height, width, num):
@@ -53,7 +55,9 @@ def render(pb_path, img_path):
         start_time = time.time()
         output = sess.run(fast_output)
         duration = time.time() - start_time
+        print ("############")
         print ("output calculated: %.10f sec" % duration)
+        print ("############")
 
         # print image
         _, pb_name = os.path.split(pb_path)
@@ -97,17 +101,65 @@ def render_sliced(pb_path, img_path, side_num):
 
 
 if __name__ == "__main__":
-    # with tf.device("/gpu:0"):
-    with tf.device("/cpu:0"):
-        # for small image/ icon/ thumbnail, use non-deblur version has better result
-        render(pb_path='./results/tz6-s-stitch/tz6-s-stitch-gen.npy', img_path="./analysis/cat_h.jpg")
+    with tf.device("/gpu:0"):
+    # with tf.device("/cpu:0"):
+        limit_bigimages = 950; # maximum width/height for using tz6-s-stitch-gen
+        
+        files = os.listdir("./analysis/")
+        num_of_files = 0
+        for file in files:
+            if file.endswith((".jpg", ".JPG")):
+                num_of_files += 1
+        
+        print ()
+        print ("############")
+        print ("Found {} JPEG files".format(num_of_files) )
+        print ("############")
+        print ()
 
-        # example for large image / photos from camera, deblur version looks better
-        # warning: this example will consume lots of memory (around 9.xxGB)
-        # render(pb_path='./results/tz6-s-stitch-sblur-lowtv/tz6-s-stitch-sblur-lowtv-gen.npy',
-        #             img_path="./analysis/london2.jpg")
-
-        # instead, slice the image into 4 smaller images and then join together to form a big one
-        # less memory is used (<1GB) but there will be defects on the boundary of the tiles
-        # render_sliced(pb_path='./results/tz6-s-stitch-sblur-lowtv/tz6-s-stitch-sblur-lowtv-gen.npy',
-        #               img_path="./analysis/london2.jpg", side_num=4)
+        counter = 0
+        success = 0
+        for file in files:
+            if file.endswith((".jpg", ".JPG", ".jpeg", ".JPEG")):
+                counter += 1
+                print ()
+                print ("############")
+                print ("File {} of {}".format(counter, num_of_files))
+                print ("Converting {}".format(file))
+                print ("############")
+                my_image = "./analysis/" + file
+                
+                
+                with Image.open(my_image) as image: 
+                    width, height = image.size
+                   
+                try:
+                    if width < limit_bigimages and height < limit_bigimages:
+                        print ("############")
+                        print ("Small image (< %s px width/height)" % limit_bigimages)
+                        print ("############")
+                        # for small image/ icon/ thumbnail, use non-deblur version has better result
+                        render(pb_path='./results/tz6-s-stitch/tz6-s-stitch-gen.npy', img_path = my_image)
+                    else:
+                        print ("############")
+                        print ("Big image (> %s px width/height)" % limit_bigimages)
+                        print ("############")
+                        # instead, slice the image into 4 smaller images and then join together to form a big one
+                        # less memory is used (<1GB) but there will be defects on the boundary of the tiles
+                        render_sliced(pb_path='./results/tz6-s-stitch-sblur-lowtv/tz6-s-stitch-sblur-lowtv-gen.npy', img_path = my_image, side_num=4)
+                    success += 1
+                except Exception as e:
+                    print("!!!!!!!!!!!!!!!!!!!!")
+                    print("Error with image {}:".format(file))
+                    print("" + str(e))
+                    print("!!!!!!!!!!!!!!!!!!!!")
+                    
+                # example for large image / photos from camera, deblur version looks better
+                # warning: this example will consume lots of memory (around 9.xxGB)
+                # render(pb_path='./results/tz6-s-stitch-sblur-lowtv/tz6-s-stitch-sblur-lowtv-gen.npy', img_path = my_image)
+                
+        print ()
+        print ("############")
+        print ("FINISHED - {} of {} successful".format(success, num_of_files))
+        print ("############")
+        input ("Press Enter to continue...")
