@@ -108,7 +108,7 @@ if __name__ == "__main__":
         files = os.listdir("./analysis/")
         num_of_files = 0
         for file in files:
-            if file.endswith((".jpg", ".JPG")):
+            if file.endswith((".jpg", ".JPG", ".jpeg", ".JPEG")):
                 num_of_files += 1
         
         print ()
